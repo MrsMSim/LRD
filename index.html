@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Little Red Dot Story Choice</title>
+<style>:root{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Fredoka:wght@600&family=Lexend:wght@400;500;600&display=swap">
+<style>
+/* Layout: a newspaper-stand choice board — a big red dot masthead, then three story "covers" to pick from */
+:root{
+  --bg:#fdfaf4; --card:#ffffff; --ink:#1f2328; --muted:#5f646b; --line:#e4ddd0;
+  --dot:#d9302b; --on-dot:#ffffff; --hl:#ffe08a; --done:#2f8a5b;
+  --sea:#14608a; --sea-t:#e4f1f7; --dino:#8c4a1c; --dino-t:#f4e7d1; --kelp:#1c6b50; --kelp-t:#e3f1e9;
+  --sun:#f2b632; --peng:#24303a; --belly:#ffffff; --beak:#f0a030; --bone:#fffaf0; --water:#9fd0e6;
+  --display:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
+  --body:"Lexend","Atkinson Hyperlegible",Verdana,system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121417; --card:#1b1f24; --ink:#eceff2; --muted:#a8afb7; --line:#2d333a;
+  --dot:#ff5a50; --on-dot:#1a0705; --hl:#7a5d12; --done:#5cc68d;
+  --sea:#5fb3dc; --sea-t:#16364a; --dino:#e3995a; --dino-t:#33281d; --kelp:#6cc9a1; --kelp-t:#1d3a30;
+  --sun:#f5c55a; --peng:#0b1014; --belly:#e9eef1; --beak:#f5b04a; --bone:#efe4cf; --water:#1f5470; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121417; --card:#1b1f24; --ink:#eceff2; --muted:#a8afb7; --line:#2d333a;
+  --dot:#ff5a50; --on-dot:#1a0705; --hl:#7a5d12; --done:#5cc68d;
+  --sea:#5fb3dc; --sea-t:#16364a; --dino:#e3995a; --dino-t:#33281d; --kelp:#6cc9a1; --kelp-t:#1d3a30;
+  --sun:#f5c55a; --peng:#0b1014; --belly:#e9eef1; --beak:#f5b04a; --bone:#efe4cf; --water:#1f5470; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.6}
+.wrap{max-width:1000px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{padding-block:32px 8px}
+.mast{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.cover{width:120px;height:auto;border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.18);flex:none;transform:rotate(-3deg)}
+.reddot{width:84px;height:84px;border-radius:50%;background:var(--dot);flex:none;display:grid;place-items:center;color:var(--on-dot);font:800 15px/1.05 var(--display);text-align:center;text-transform:uppercase;letter-spacing:.04em}
+.mast h1{font-family:var(--display);font-weight:800;font-size:clamp(34px,7vw,56px);line-height:1;margin:0;text-wrap:balance}
+.mast .date{font-size:15px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:4px}
+.intro{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;margin:20px 0 8px;max-width:760px}
+.intro p{margin:0;font-size:20px;flex:1 1 280px;min-width:0}
+.speed{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:15px;color:var(--muted);margin-top:8px}
+.speed button{font:600 15px var(--body);border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:4px 14px;cursor:pointer}
+.speed button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.rtm{font:600 15px var(--body);border:2px solid currentColor;color:var(--ink);background:var(--card);border-radius:10px;padding:6px 12px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.rtm::before{content:"";width:0;height:0;border-left:9px solid currentColor;border-top:6px solid transparent;border-bottom:6px solid transparent}
+.rtm.playing::before{border:0;width:10px;height:10px;background:currentColor;border-radius:2px}
+.w.on{background:var(--hl);box-shadow:0 0 0 2px var(--hl);border-radius:4px}
+button:focus-visible,a:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:18px;padding-block:20px 40px}
+.story{--c:var(--sea);--t:var(--sea-t);background:var(--card);border:2px solid var(--line);border-radius:18px;overflow:hidden;display:grid;grid-template-rows:auto 1fr;min-width:0}
+.story.dino{--c:var(--dino);--t:var(--dino-t)} .story.idiom{--c:var(--kelp);--t:var(--kelp-t)}
+.story .art{background:var(--t);position:relative}
+.story .art img{display:block;width:100%;max-width:100%;aspect-ratio:16/9;object-fit:cover;object-position:top}
+.story .page{position:absolute;top:10px;left:10px;background:var(--card);color:var(--c);font-size:13px;font-weight:600;border-radius:999px;padding:2px 10px}
+.story .done-badge{position:absolute;top:10px;right:10px;background:var(--done);color:#fff;font-size:13px;font-weight:600;border-radius:999px;padding:2px 10px}
+.story .body{padding:16px 18px 18px;display:grid;gap:10px;align-content:start}
+.story h2{font-family:var(--display);font-weight:800;font-size:30px;line-height:1.1;margin:0;color:var(--c)}
+.story .blurb{margin:0;font-size:18px}
+.story ul{margin:0;padding:0;list-style:none;display:grid;gap:4px;font-size:15px;color:var(--muted)}
+.story li{display:flex;gap:8px;align-items:center}
+.story li::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c);flex:none}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tags span{font-size:13px;background:var(--t);color:var(--c);border-radius:999px;padding:2px 10px;font-weight:600}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:4px}
+.go{font:600 18px var(--body);background:var(--c);color:var(--card);text-decoration:none;border-radius:12px;padding:10px 22px;display:inline-flex;align-items:center;gap:8px;min-height:48px}
+.go::after{content:"";border-left:9px solid currentColor;border-top:6px solid transparent;border-bottom:6px solid transparent}
+.story .rtm{color:var(--c)}
+.fin{font:500 15px var(--body);background:transparent;border:2px dashed var(--line);color:var(--muted);border-radius:10px;padding:6px 12px;cursor:pointer}
+.fin[aria-pressed="true"]{border-style:solid;border-color:var(--done);color:var(--done);font-weight:600}
+.log{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:14px 18px;margin-bottom:40px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.log b{font-family:var(--display);font-size:22px}
+.log .dots{display:flex;gap:6px}
+.log .dots span{width:22px;height:22px;border-radius:50%;border:2px solid var(--dot)}
+.log .dots span.on{background:var(--dot)}
+.log p{margin:0;color:var(--muted);font-size:16px;flex:1 1 220px;min-width:0}
+.src{font-size:14px;color:var(--muted);padding-bottom:28px}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="mast">
+      <img class="cover" src="img/cover.jpg" alt="Front cover of Little Red Dot, Tuesday 20 October 2026">
+      <div><h1>Pick a story!</h1><div class="date">Little Red Dot · Tuesday 20 October 2026</div></div>
+    </div>
+    <div class="intro"><p id="introTxt">There are three stories here. Choose the one you like. Learn the words, read the story, and play the games. When you finish, come back and pick another one!</p></div>
+    <div class="speed" role="group" aria-label="Reading speed">Reading speed:
+      <button id="spSlow" aria-pressed="true">Slow</button><button id="spNorm" aria-pressed="false">Normal</button>
+    </div>
+  </header>
+
+  <main class="grid" id="grid"></main>
+
+  <div class="log">
+    <b>My reading log</b>
+    <div class="dots" id="dots"><span></span><span></span><span></span></div>
+    <p id="logTxt">Tap "I finished it!" on a story when you are done.</p>
+  </div>
+  <p class="src">Stories retold in simple words from Little Red Dot, The Straits Times, 20 October 2026.</p>
+</div>
+
+<script>
+
+const STORIES=[
+  {id:"fish",cls:"",href:"fish.html",title:"Fish Finder",page:"Pages 10–11",art:`<img src="img/fish.jpg" alt="Pages 10 and 11: There's plenty of fish in the sea">`,
+   blurb:"A student in Singapore made an app. Take a photo of a fish, and the app tells you what it is!",
+   does:["Learn 8 new words","Read 5 short parts","Watch 3 short videos","Answer 7 questions"],tags:["Sea animals","Phones and apps"]},
+  {id:"dino",cls:"dino",href:"dino.html",title:"Dino Dig",page:"Pages 8–9",art:`<img src="img/dino.jpg" alt="Pages 8 and 9: Dino debrief">`,
+   blurb:"Dinosaur bones were found this year in Spain, Thailand and Mongolia. Find out what scientists learned.",
+   does:["Learn 8 new words","Read 4 short stories","Watch 2 videos","Sort 10 facts"],tags:["Dinosaurs","Science"]},
+  {id:"idiom",cls:"idiom",href:"idioms.html",title:"Idiom Fishing Trip",page:"Page 16",art:`<img src="img/idiom.jpg" alt="Page 16: A Penguin's Guide to Idioms comic">`,
+   blurb:"Two penguins go fishing, but they cannot catch any fish. Can you find the joke?",
+   does:["Read a picture story","Be a detective","Learn 2 idioms","Act it out with friends"],tags:["Comic","Funny","Acting"]}
+];
+
+/* speech: simple read-to-me with word highlight */
+const synth=window.speechSynthesis;let voice=null,rate=0.75,curBtn=null;
+function pickVoice(){try{const vs=synth.getVoices();voice=vs.find(v=>/en[-_](SG|GB)/i.test(v.lang)&&v.localService)||vs.find(v=>/^en/i.test(v.lang))||null}catch(e){}}
+if(synth){pickVoice();synth.onvoiceschanged=pickVoice}
+function setRate(r){rate=r;document.getElementById("spSlow").setAttribute("aria-pressed",r<0.9);document.getElementById("spNorm").setAttribute("aria-pressed",r>=0.9)}
+try{if(localStorage.getItem("lrd-rate")==="norm")setRate(0.95)}catch(e){}
+document.getElementById("spSlow").onclick=()=>{setRate(0.75);try{localStorage.setItem("lrd-rate","slow")}catch(e){}};
+document.getElementById("spNorm").onclick=()=>{setRate(0.95);try{localStorage.setItem("lrd-rate","norm")}catch(e){}};
+function wrap(el){if(el.dataset.w)return;let off=0;
+  const parts=el.textContent.split(/(\s+)/);el.textContent="";
+  parts.forEach(p=>{if(!p)return;if(/^\s+$/.test(p))el.append(p);else{const s=document.createElement("span");s.className="w";s.dataset.s=off;s.textContent=p;el.append(s)}off+=p.length});el.dataset.w=1}
+function stop(){if(synth)synth.cancel();document.querySelectorAll(".w.on").forEach(s=>s.classList.remove("on"));
+  if(curBtn){curBtn.textContent="Read to me";curBtn.classList.remove("playing")}curBtn=null}
+function read(els,btn){if(!synth)return;if(curBtn===btn){stop();return}stop();curBtn=btn;btn.textContent="Stop";btn.classList.add("playing");
+  let i=0;const next=()=>{if(curBtn!==btn)return;document.querySelectorAll(".w.on").forEach(s=>s.classList.remove("on"));
+    if(i>=els.length){stop();return}const el=els[i++];wrap(el);const spans=[...el.querySelectorAll(".w")];
+    const u=new SpeechSynthesisUtterance(el.textContent);if(voice){u.voice=voice;u.lang=voice.lang}else u.lang="en-GB";u.rate=rate;
+    u.onboundary=e=>{let hit=null;for(const s of spans){if(+s.dataset.s<=e.charIndex)hit=s;else break}spans.forEach(s=>s.classList.toggle("on",s===hit))};
+    u.onend=next;u.onerror=next;synth.speak(u)};next()}
+function rtm(getEls){const b=document.createElement("button");b.className="rtm";b.type="button";b.textContent="Read to me";b.onclick=()=>read(getEls(),b);return b}
+document.querySelector(".intro").append(rtm(()=>[document.getElementById("introTxt")]));
+
+/* reading log (this device only) */
+let done={};try{done=JSON.parse(localStorage.getItem("lrd-done")||"{}")}catch(e){}
+function saveDone(){try{localStorage.setItem("lrd-done",JSON.stringify(done))}catch(e){}}
+function renderLog(){const n=STORIES.filter(s=>done[s.id]).length;
+  [...document.getElementById("dots").children].forEach((d,i)=>d.classList.toggle("on",i<n));
+  document.getElementById("logTxt").textContent=n===0?'Tap "I finished it!" on a story when you are done.':n===3?"Wow! You read all three stories. Well done!":`You read ${n} of 3 stories. Pick another one!`;
+  STORIES.forEach(s=>{const c=document.getElementById("c-"+s.id);c.querySelector(".done-badge").hidden=!done[s.id];
+    const f=c.querySelector(".fin");f.setAttribute("aria-pressed",!!done[s.id]);f.textContent=done[s.id]?"Finished!":"I finished it!"})}
+
+const grid=document.getElementById("grid");
+STORIES.forEach(s=>{const c=document.createElement("article");c.className="story "+s.cls;c.id="c-"+s.id;
+  c.innerHTML=`<div class="art">${s.art}<span class="page">${s.page}</span><span class="done-badge" hidden>Finished</span></div>
+  <div class="body"><h2>${s.title}</h2><p class="blurb">${s.blurb}</p>
+  <ul>${s.does.map(d=>`<li>${d}</li>`).join("")}</ul>
+  <div class="tags">${s.tags.map(t=>`<span>${t}</span>`).join("")}</div>
+  <div class="actions"><a class="go" href="${s.href}">Start</a></div>
+  <div class="actions"><button class="fin" type="button" id="fin-${s.id}">I finished it!</button></div></div>`;
+  c.querySelector(".actions").append(rtm(()=>[c.querySelector("h2"),c.querySelector(".blurb"),...c.querySelectorAll("li")]));
+  c.querySelector(".fin").onclick=()=>{done[s.id]=!done[s.id];saveDone();renderLog()};
+  grid.append(c)});
+renderLog();
+</script>
+
+</body>
+</html>
